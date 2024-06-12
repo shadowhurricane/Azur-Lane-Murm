@@ -151,7 +151,7 @@ var viewer = {
                         $("#skinContainer").append($("<div></div>")
                             .addClass("shipIcon")
                             .attr("id",data[$(this).attr("id")].skin[x])
-                            .css("background", "url(../assets/qicon/"+data[$(this).attr("id")].skin[x]+".png)")
+                            .css("background", "url(https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/qicon/"+data[$(this).attr("id")].skin[x]+".png)")
                             .css("background-size", "70px 70px")
                             .click(function(){
                                 viewer.activeId = $(this).attr("id");
