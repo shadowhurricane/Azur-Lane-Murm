@@ -8,7 +8,7 @@ var viewer = {
     init: function() {
         viewer.sd = new SD('assets');
         viewer.searchResults = charData;
-        viewer.currentBG = "https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/bg/zgreen.png";
+        viewer.currentBG = ""url(https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/bg/zgreen.png";
         viewer.mouse = false;
         viewer.lastMouseX = 0;
         viewer.lastMouseY = 0;
@@ -388,7 +388,7 @@ function onSelectBG(){
         img.id = backgroundData[i];
         img.addEventListener("click", function(e) {
             //document.getElementById("SdCanvas").style.backgroundImage = "url(https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/bg/"+this.id+")";
-            viewer.currentBG = "../assets/bg/"+this.id;
+            viewer.currentBG = ""url(https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/bg/"+this.id;
             viewer.drawBG(viewer.currentBG);
             document.body.removeChild(document.getElementById("selector"));
             document.body.removeChild(document.getElementById("darken"));
