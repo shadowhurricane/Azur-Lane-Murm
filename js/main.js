@@ -114,7 +114,7 @@ var viewer = {
             $("#resultContainer").append($("<div></div>")
                 .addClass("shipIcon")
                 .attr("id",value)
-                .css("background", "url(../assets/qicon/"+data[value].skin[0]+".png)")
+                .css("background", "url(https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/qicon/"+data[value].skin[0]+".png)")
                 .css("background-size", "70px 70px")
                 .mouseover(function(){
                     $(this).css("background-size", "105%");
