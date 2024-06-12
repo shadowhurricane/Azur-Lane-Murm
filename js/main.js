@@ -8,7 +8,7 @@ var viewer = {
     init: function() {
         viewer.sd = new SD('assets');
         viewer.searchResults = charData;
-        viewer.currentBG = "../assets/bg/zgreen.png";
+        viewer.currentBG = "https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/bg/zgreen.png";
         viewer.mouse = false;
         viewer.lastMouseX = 0;
         viewer.lastMouseY = 0;
@@ -382,12 +382,12 @@ function onSelectBG(){
     for (var i = 0; i < backgroundData.length; i++){
         var img = document.createElement('div');
         img.className = "thumbbutton";
-        img.style.backgroundImage = "url(../assets/bg/"+backgroundData[i]+")";
+        img.style.backgroundImage = "url(https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/bg/"+backgroundData[i]+")";
         img.style.backgroundSize = "500px auto";
         img.style.backgroundPosition = "50% 50%";
         img.id = backgroundData[i];
         img.addEventListener("click", function(e) {
-            //document.getElementById("SdCanvas").style.backgroundImage = "url(../assets/bg/"+this.id+")";
+            //document.getElementById("SdCanvas").style.backgroundImage = "url(https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/bg/"+this.id+")";
             viewer.currentBG = "../assets/bg/"+this.id;
             viewer.drawBG(viewer.currentBG);
             document.body.removeChild(document.getElementById("selector"));
