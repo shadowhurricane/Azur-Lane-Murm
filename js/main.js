@@ -26,7 +26,7 @@ var viewer = {
             viewer.changeAnimation(this.selectedIndex);
         });
 
-        viewer.app = new PIXI.Application(900, 2000, { backgroundColor: 0x00ff00 });
+        viewer.app = new PIXI.Application(2000, 900, { backgroundColor: 0x00ff00 });
         viewer.canvas.append($(viewer.app.view));
         viewer.drawBG(viewer.currentBG);   
         $(viewer.app.view).mousedown(() => {
