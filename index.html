@@ -173,15 +173,17 @@
                 flex-direction: column;
             }
             #spinebar {
-                width: 150px;
-                height: 240px;
-                position: absolute;
-                right: 0;
-                top: 0;
-                background-color: transparent;
-                display: flex;
-                flex-direction: column;
-            }
+    width: 150px;
+    height: 240px;
+    position: absolute;
+    top: 150px; /* 150 pixels below the top of the website */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Center horizontally */
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+}
+
             #mainbody {
                 position: absolute;
                 top: 0px;
@@ -295,7 +297,7 @@
         
 
         <div id="spinebar">
-            <div style="width: 100%; height: 35px; border-bottom: 2px solid #5c5d70; border-top: 2px solid #5c5d70; display: inline-block; line-height: 30px; padding-left: 10px; vertical-align: middle; background-color: #24252d;"><b>Sprites</b></div>
+            <div style="width: 100%; height: 35px; border-bottom: 2px solid #5c5d70; border-top: 2px solid #5c5d70; display: inline-block; line-height: 30px; padding-left: 10px; vertical-align: middle; background-color: #24252d;"><b>Select Character:</b></div>
             <div style="display: table-cell; width: 100%; height: 30px">
                 <div class="selectShip material-icons spinetoolbutton q" onclick="onSelectShip()">add</div>
                 <div class="material-icons spinetoolbutton" style="float: right;" id="removeSprite">clear</div>
