@@ -1,335 +1,419 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Azur Lane SD</title>
+$(document).ready(function(){
+    viewer.init();
+    toolbar.init();
+    spinebar.init();
+  });
 
-        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-        <style>
+var viewer = {
+    init: function() {
+        viewer.sd = new SD('assets');
+        viewer.searchResults = charData;
+        viewer.currentBG = "../assets/bg/zgreen.png";
+        viewer.mouse = false;
+        viewer.lastMouseX = 0;
+        viewer.lastMouseY = 0;
+        viewer.scale = 1.0;
 
-            span {
-                display: inline-block;
-                vertical-align: middle;
-            }
-            .divCanvas {
-                height: 900px; 
-                width: 1000px;
-                background-position: 50% 50%;
-                display: inline-block;
-            }
-            .selectStyle {
-                background-color: #24252d;
-                color: #ffffff;
+        viewer.canvas = $(".Canvas");
+        viewer.selectAnimation = $(".selectAnimation");
+        viewer.selectShip = $(".selectShip");
+        viewer.selectBG = $(".selectBG");
 
+        viewer.selectedSpine = -1;
+        viewer.spine = [];
+
+        viewer.selectAnimation.change(function() {
+            viewer.changeAnimation(this.selectedIndex);
+        });
+
+        viewer.app = new PIXI.Application(900, 900, { backgroundColor: 0x00ff00 });
+        viewer.canvas.append($(viewer.app.view));
+        viewer.drawBG(viewer.currentBG);   
+        $(viewer.app.view).mousedown(() => {
+            viewer.mouse = true;
+            viewer.lastMouseX = event.clientX - event.target.getBoundingClientRect().left;
+            viewer.lastMouseY = event.clientY - event.target.getBoundingClientRect().top;
+        });
+        $(viewer.app.view).mouseup(() => {viewer.mouse = false});
+        $(viewer.app.view).mousemove((event) => {
+            var sx = event.clientX - event.target.getBoundingClientRect().left;
+            var sy = event.clientY - event.target.getBoundingClientRect().top;
+            if(viewer.mouse){
+                viewer.spine[viewer.selectedSpine].position.set((sx - viewer.lastMouseX) + viewer.spine[viewer.selectedSpine].position._x, (sy - viewer.lastMouseY) + viewer.spine[viewer.selectedSpine].position._y);
+
+                viewer.lastMouseX = sx;
+                viewer.lastMouseY = sy;
             }
-            .btnGenericText {
-                white-space: nowrap;
-                height: 30px;
-                text-align: center;
-                vertical-align: middle;
-                display: table-cell;
-                background-color: #24252d;
-                border-style: solid;
-                border-color: #5c5d70;
-                border-width: 1px;
-                cursor: pointer;
-                padding: 0px 7px 0px 7px;
-                font-size: 14px;
-                color: white;
+        });
+
+        window.onresize = (event) => {
+            if (event === void 0) { event = null; }
+            $("#mainbody").width(spinebar.spinebar.position().left-40);
+            if (document.getElementById("darken") != null){
+                document.getElementById("darken").top = window.pageYOffset + "px";
+                document.getElementById("selector").top = (window.pageYOffset + (window.innerHeight * 0.05)) + "px";
             }
-            .btnGenericText:hover {
-                box-shadow: 0px 0px 10px white;
+            var height = Math.max( document.body.scrollHeight, document.body.offsetHeight, 
+                               document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );   
+            $("#footer").css("top",height - $("#footer").height() - 20);
+        };
+        $(document).ready(() => {
+            $("#mainbody").width(spinebar.spinebar.position().left-40);
+            var height = Math.max( document.body.scrollHeight, document.body.offsetHeight, 
+                               document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );   
+            $("#footer").css("top",height - $("#footer").height() - 20);
+            toolbar.toolbar.css("top", window.pageYOffset);
+        });
+        $(window).scroll(function(){
+            toolbar.toolbar.css("top", window.pageYOffset);
+            spinebar.spinebar.css("top", window.pageYOffset);
+        });
+    },
+    changeCanvas : function(skeletonData) {
+        viewer.spine.push(new PIXI.spine.Spine(skeletonData));
+        viewer.spine[viewer.spine.length-1].name = skeletonData.name;
+        viewer.selectedSpine = viewer.spine.length - 1;
+        
+        if (viewer.app.stage.children.length <= 1)
+            viewer.drawBG(viewer.currentBG);
+        viewer.app.stage.addChild(viewer.spine[viewer.selectedSpine]);
+        viewer.spine[viewer.selectedSpine].position.set(viewer.app.view.width * 0.5 , viewer.app.view.height * 0.8);
+        spinebar.addToSpriteList({"icon":skeletonData.icon,"id":skeletonData.name,"index":viewer.selectedSpine});
+    },
+    changeAnimation : function(num) {
+        var name = viewer.spine[viewer.selectedSpine].spineData.animations[num].name;
+        viewer.spine[viewer.selectedSpine].state.setAnimation(0, name, true);
+    },
+    search : function(filter, filterType, key){
+        if (filter != null && filterType != null){
+            var temp = {};
+            for (var value in viewer.searchResults){
+                if (viewer.searchResults[value][filterType] == filter)
+                    temp[value] = viewer.searchResults[value];                
             }
-            .btnGenericText:active {
-                box-shadow: 1px 1px 4px white, -1px 1px 4px white, 1px -1px 4px white, -1px -1px 4px white;
-            }
-            .darken {
-                height: 100%;
-                width: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-                position: absolute;
-                left: 0px;
-            }
-            .selector {
-                width: 80%;
-                height: 90%;
-                position: absolute;
-                left: 10%;
-                background-color: #5c5d70;
-                overflow-y: auto;
-                padding: 10px;
-                border-radius: 3px;
-            }
-            .thumbbutton {
-                cursor: pointer;
-                height: 90px;
-                width: 90px;
-                display: inline-block;
-                margin-top: 20px;
-                margin-left: 20px;
-                border-radius: 3px;
-            }
-            .shipIcon {
-                cursor: pointer;
-                height: 70px;
-                width: 70px;
-                display: inline-block;
-                margin-top: 20px;
-                margin-left: 20px;
-                border-radius: 3px;
-            }
-            .searchContainer {
-                width: 100%;                
-            }
-            .resultContainer {
-                width: 100%;
-            }
-            .vertical-descending
-            {
-                 -webkit-transform:rotate(270deg); 
-                 -moz-transform:rotate(270deg); 
-                 -o-transform:rotate(270deg); 
-                 -ms-transform:rotate(270deg); 
-                 transform:rotate(270deg); 
-            }
-            #footer {
-                position: absolute;
-                height: auto;
-                width: 100%;
-                overflow: hidden;
-                left: 0;
-                background-color: #24252d;
-                color: white;
-                text-align: left;
-                padding:10px 20px 10px 20px;
-                font-size:10px;
-            }
-            table.wikitable {
-                margin: 1em 0;
-                background-color: #373743;
-                border-style: solid;
-                border-width: 1px;
-                border-color: #5c5d70;
-                border-collapse: collapse;
-                color: #ffffff;
-                height: 100%;
-                width: 100%;
-            }
-            table.wikitable td {
-                border-style: solid;
-                border-width: 1px;
-                border-color: #5c5d70;
-                border-collapse: collapse;
-            }
-            #toolbar {
-                width: 150px;
-                height: 240px;
-                position: absolute;
-                left: 0;
-                top: 0;
-                background-color: transparent;
-                padding-left: 3px;
-                padding-top: 5px;
-                display: flex;
-                flex-direction: column;
-            }
-            .toolbar-button {
-                width: 34px;
-                height: 34px;
-                margin-bottom: 3px;
-                font-size: 20px;
-                display: inline-block;
-                line-height: 34px;
-                padding: 0px;
-            }
-            .tbb-highlight {
-                background-color: #3f2f52;
-                border-color: white;
-            }
-            .context {                
-                background-color: #373743;
-                border-style: solid;
-                border-color: #5c5d70;
-                border-width: 1px;
-                padding: 3px;
-                width: auto;
-                height: auto;
-                position: absolute;
-                left: 40px;
-                display: flex;
-                flex-direction: column;
-            }
-            .rightContext {
-                background-color: #373743;
-                border-style: solid;
-                border-color: #5c5d70;
-                border-width: 1px;
-                padding: 3px;
-                width: 300px;
-                height: 200px;
-                position: absolute;
-                right: 150px;
-                display: flex;
-                flex-direction: column;
-            }
-            #spinebar {
-    width: 150px;
-    height: 240px;
-    position: absolute;
-    top: 150px; /* 150 pixels below the top of the website */
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%); /* Center horizontally */
-    background-color: transparent;
-    display: flex;
-    flex-direction: column;
+            viewer.searchResults = temp;
+        }
+        if (key != null){
+            if (key == 8 || key == 46)
+                viewer.searchResults = charData;
+        }
+        var data = {};
+        var r = new RegExp($("#searchField").val().toLowerCase().trim());
+        for (var value in viewer.searchResults){
+            if (r.test(viewer.searchResults[value].name.toLowerCase()))
+                data[value] = viewer.searchResults[value];
+        }
+        viewer.searchResults = data;
+        viewer.loadFilter("type", "#searchType", "#ecd2fc");
+        viewer.loadFilter("group", "#searchGroup", "#ccccff");
+        viewer.loadResults(viewer.searchResults);
+    },
+    loadResults : function(data){
+        $("#resultContainer").empty();
+        for (var value in data){
+            $("#resultContainer").append($("<div></div>")
+                .addClass("shipIcon")
+                .attr("id",value)
+                .css("background", "url(https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/qicon/"+data[value].skin[0]+".png)")
+                .css("background-size", "70px 70px")
+                .mouseover(function(){
+                    $(this).css("background-size", "105%");
+                })
+                .mouseout(function(){
+                    $(this).css("background-size", "100%");
+                })
+                .click(function(){
+                    $(document.body).append($("<div></div>")
+                        .attr("id","darken2")
+                        .addClass("darken")
+                        .css("top", window.pageYOffset + "px")
+                        .click(function(){
+                            $('#darken2').remove();
+                            $('#selector2').remove();
+                            $(document.body).css("overflow", "auto");
+                            viewer.searchResults = charData;
+                        })
+                    )
+                    .append($("<div></div>")
+                        .attr("id","selector2")
+                        .addClass("selector")
+                        .css("top", (window.pageYOffset + (window.innerHeight * 0.05)) + "px")
+                    )
+                    .css("overflow", "hidden");
+
+
+                    $("#selector2").append($("<div></div>")
+                        .attr("id","skinContainer")
+                        .attr("align","center")
+                    );
+
+                    for (var x in data[$(this).attr("id")].skin){
+                        $("#skinContainer").append($("<div></div>")
+                            .addClass("shipIcon")
+                            .attr("id",data[$(this).attr("id")].skin[x])
+                            .css("background", "url(https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/qicon/"+data[$(this).attr("id")].skin[x]+".png)")
+                            .css("background-size", "70px 70px")
+                            .click(function(){
+                                viewer.activeId = $(this).attr("id");
+                                var self = this;
+                                $("#skinContainer").children("div").each(function(){
+                                    if ($(this).attr("id") == $(self).attr("id"))
+                                        $(this).css({"height":"90px","width":"90px","background-size":"100%"});
+                                    else
+                                        $(this).css({"height":"70px","width":"70px","background-size":"100%"});
+                                });
+                            })
+                        );
+                        $("#"+data[$(this).attr("id")].skin[0]).trigger("click");
+                    }
+
+                    $("#selector2").append($("<div></div>")
+                        .attr("id","ctrlContainer")
+                        .attr("align","center")
+                        .css("margin-top","10px")
+                    );
+
+                    $("#ctrlContainer").append($("<div></div>")
+                        .attr("id","skinSelectOK")
+                        .addClass("btnGenericText")
+                        .html("<b>Select</b>")
+                    );
+
+                    $("#skinSelectOK").click(function() {
+                        viewer.toggleButtonState(true);
+                        viewer.sd.load(viewer.activeId, viewer, viewer.toggleButtonState);
+                        
+                        viewer.loaded = true;
+                        $('#selector').remove();
+                        $('#darken').remove();
+                        $('#selector2').remove();
+                        $('#darken2').remove();
+                        $(document.body).css("overflow", "auto");
+                        viewer.searchResults = charData;
+                    });
+                    
+                    var height = Math.max( document.body.scrollHeight, document.body.offsetHeight, 
+                                       document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );  
+                    $("#footer").css("top",height - $("#footer").height() - 20);
+                }));
+        }
+    },
+    loadFilter : function (filterType, container, color){
+        if ($(container).length == 0){
+            $("#searchContainer").append($("<div></div>")
+                .attr("id",container.substring(1))
+                .css({"width" : "100%", "margin-top" : "15px"}));
+        }
+        $(container).empty();
+        var words = [];
+        for (var i in viewer.searchResults){
+            words.push(viewer.searchResults[i][filterType]);
+        }
+        var distinct = [];
+        $.each(words, function(i, val){
+            if ($.inArray(val, distinct) === -1) distinct.push(val);
+        });
+        for (var j in distinct){
+            $(container).append($("<div>"+distinct[j]+"</div>")
+                .addClass("btnGenericText")
+                .css({"display" : "inline-block", "margin" : "0px 0px 5px 10px", "color" : color})
+                .click(function(){
+                    viewer.search($(this).html(), filterType);
+                }));
+        }
+    },
+    toggleButtonState : function(b){
+        viewer.selectAnimation.prop("disabled", b);
+        viewer.selectBG.prop("disabled", b);
+        if (b){
+            viewer.selectAnimation.css("color","gray");
+            viewer.selectBG.css("color","gray");
+            viewer.selectBG.attr("onclick","");
+            viewer.selectShip.removeClass("q");
+            viewer.selectShip.removeClass("spinetoolbar");
+            viewer.selectShip.addClass("disabled-btn");
+            viewer.selectShip.attr("onclick","");
+        } else {
+            viewer.selectAnimation.css("color","white");
+            viewer.selectBG.css("color","white");
+            viewer.selectBG.attr("onclick","onSelectBG()");
+            viewer.selectShip.removeClass("disabled-btn");
+            viewer.selectShip.addClass("spinetoolbar");
+            viewer.selectShip.addClass("q");
+            viewer.selectShip.attr("onclick","onSelectShip()");
+        }
+    },
+    drawBG : function(url){
+        var bgimg = PIXI.Sprite.fromImage(url);
+        var h, w;
+        h = viewer.app.view.height;
+        w = viewer.app.view.width;
+        bgimg.anchor.x = 0.5;
+        bgimg.anchor.y = 0.5;
+        bgimg.position.x = w/2;
+        bgimg.position.y = h/2;
+        if (viewer.app.stage.children[0] != null)
+            viewer.app.stage.removeChildAt(0);
+        viewer.app.stage.addChildAt(bgimg,0);
+    }
+};
+
+function onChangeLog(){
+    $(document.body).append($("<div></div>")
+        .attr("id","darken")
+        .addClass("darken")
+        .css("top", window.pageYOffset + "px")
+        .click(function(){
+            $('#selector').remove();
+            $('#darken').remove();
+            $(document.body).css("overflow", "auto");
+            viewer.searchResults = charData;
+        }))
+    .append($("<div></div>")
+        .attr("id","selector")
+        .addClass("selector")
+        .css("top", (window.pageYOffset + (window.innerHeight * 0.05)) + "px")
+        .css("padding", "2%"))
+    .css("overflow", "hidden");
+    $("#selector").append($("<table></table>")
+        .addClass("wikitable")
+        .append($("<tr></tr>")
+            .append($("<td></td>")
+                .css("background-color", "#24252D")
+                .css("height", "30px")
+                .css("padding-left", "8px")
+                .html("<b>Changelog</b>")
+            )
+        )
+        .append($("<tr></tr>")
+            .append($("<td></td>")
+                .attr("id", "chglog")
+                .css("padding", "15px")
+                .css("vertical-align","text-top")
+            )
+        )
+    )
+
+    var cb = function (response){
+        for (i in response){
+            var message = response[i].commit.message;
+            var date = response[i].commit.committer.date;
+            date = date.replace("T", " ");
+            date = date.replace("Z", " UTC");
+
+            $("#chglog").append($("<p></p>")
+                .css("line-height", "0.8")
+                .html(message+"<br>")
+                .append($("<font></font>")
+                    .css("font-size", "10px")
+                    .css("color", "gray")
+                    .html(date)
+                )
+            );
+        }
+    }
+
+    var xobj = new XMLHttpRequest();
+    xobj.open("GET", "https://api.github.com/repos/alg-wiki/AzurLaneSDViewer/commits?sha=gh-pages", true);
+    xobj.setRequestHeader("Authorization", "token c44bb04d2275b3c1849b49f02d8c1b473c5b6864");
+    //access token scope: <<no scope>>
+    //Grants read-only access to public information (includes public user profile info, public repository info, and gists)
+    xobj.onreadystatechange = function () {
+          if (xobj.readyState == 4 && xobj.status == "200") {
+            cb(JSON.parse(xobj.response));
+          }
+    };
+    xobj.send(null); 
 }
 
-            #mainbody {
-                position: absolute;
-                top: 0px;
-                left: 0px;
-            }
-            .spinetoolbutton {
-                width: 50%; 
-                height: 30px; 
-                display: inline-block; 
-                line-height: 30px; 
-                vertical-align: middle; 
-                text-align: center; 
-                border : 1px solid #5c5d70;
-                cursor: pointer;
-            }
-            .q {
-                background-color: #ff803e;
-                color: white;
-            }
-            .disabled-btn {
-                background-color: white;
-                color: gray;
-                cursor: none;
-            }
-            .spinetoolbutton:hover {
-                background-color: gray;
-            }
-            .spinetoolbutton:active {
-                background-color: white;
-                color: black;
-            }
-            .spineoptionbutton{
-                height: 66px;
-                width : 20px;
-                border: 1px solid #5c5d70;
-                background-color: #373743;
-                float: left;
-                margin-right: 3px; 
-                display: inline-block; 
-                line-height: 66px; 
-                vertical-align: middle; 
-                text-align: center;
-                font-size: 18px;
-                cursor: pointer;
-            }
-            .spineoptionbutton:hover {
-                background-color: gray;
-            }
-            .spineoptionbutton:active {
-                background-color: white;
-                color: black;
-            }
+function onSelectShip(){
+    $(document.body).append($("<div></div>")
+        .attr("id","darken")
+        .addClass("darken")
+        .css("top", window.pageYOffset + "px")
+        .click(function(){
+            $('#selector').remove();
+            $('#darken').remove();
+            $(document.body).css("overflow", "auto");
+            viewer.searchResults = charData;
+        }))
+    .append($("<div></div>")
+        .attr("id","selector")
+        .addClass("selector")
+        .css("top", (window.pageYOffset + (window.innerHeight * 0.05)) + "px"))
+    .css("overflow", "hidden");
+    $("#selector").append($("<div></div>")
+        .attr("id","searchContainer")
+        .addClass("searchContainer")
+        .css({"padding" : "15px"})
+        .append($("<input>")
+            .attr("id","searchField")
+            .addClass("form-control")
+            .css({"background-color": "#24252d", "color": "#ffffff", "display" : "inline-block"})
+            .on("keyup", function(){
+                var key = event.keyCode || event.charCode;
+                viewer.search(null, null, key);
+            })))
+    .append($("<div></div>")
+        .attr("id","resultContainer")
+        .addClass("resultContainer"));
+    viewer.loadFilter("type", "#searchType", "#ecd2fc");
+    viewer.loadFilter("group", "#searchGroup", "#ccccff");
+    viewer.loadResults(viewer.searchResults);
+}
 
-        </style>
+function onSelectBG(){
+    var div = document.createElement('div');
+    div.className = "darken";
+    div.id = "darken";
+    div.style.top = window.pageYOffset + "px";
+    div.addEventListener("click", function(e) {
+            document.body.removeChild(document.getElementById("selector"));
+            document.body.removeChild(document.getElementById("darken"));
+            document.body.style.overflow = "auto";
+        }, false);
+    document.body.appendChild(div);
+    document.body.style.overflow = "hidden";
+    var selector = document.createElement('div');
+    selector.id = "selector";
+    selector.className = "selector";
+    selector.style.top = (window.pageYOffset + (window.innerHeight * 0.05)) + "px" ;
+    document.body.appendChild(selector);
+    for (var i = 0; i < backgroundData.length; i++){
+        var img = document.createElement('div');
+        img.className = "thumbbutton";
+        img.style.backgroundImage = "url(../assets/bg/"+backgroundData[i]+")";
+        img.style.backgroundSize = "500px auto";
+        img.style.backgroundPosition = "50% 50%";
+        img.id = backgroundData[i];
+        img.addEventListener("click", function(e) {
+            //document.getElementById("SdCanvas").style.backgroundImage = "url(../assets/bg/"+this.id+")";
+            viewer.currentBG = "../assets/bg/"+this.id;
+            viewer.drawBG(viewer.currentBG);
+            document.body.removeChild(document.getElementById("selector"));
+            document.body.removeChild(document.getElementById("darken"));
+            document.body.style.overflow = "auto";
+        }, false);
+        document.getElementById("selector").appendChild(img);
+    }
+}
 
-        <link rel="stylesheet" href="css/bootstrap.min.css">
-    </head>
-
-
-    <body style="background-color: #494a5a; color: white;">
-        <div id="mainbody">
-
-            
-            
-            </div>
-           
-        
-        <nav class="clearfix">                
-                <div align="center" style="margin-bottom: 15px;">
-
-                    
-                </div>
-            
-                <div align="center">    
-
-                                        <h1>Azur Lane Murm</h1> 
-                                                <br>
-                                         <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('Buy Me a Coffee', '#29abe0', 'T6T74AUGE');kofiwidget2.draw();</script> 
-                                                <br>
-                                                <br>
-                                                <br>
-                    <div class="form-group" style="width: 65%; display: inline-block; margin-bottom: 15px;">
-                        <label><b>Select Chibi Animation:</b></label>
-                        <select class="selectAnimation form-control" style="background-color: #24252d; color: #ffffff;"></select>
-                    
-                                        
-
-                                        
-                    
-                    </div>
-                </div>
-            
-                <div style="text-align: center;">
-    <div class="Canvas divCanvas" id="SdCanvas" style="margin: 0 auto;">
-    </div>
-</div>
-
-                    
-                </div>
-            </nav>
-        </div>
-
-
-
-        <div id="toolbar">
-            <div class="material-icons btnGenericText toolbar-button" onclick="onChangeLog()" data-toggle="tooltip" title="Changelog">announcement</div>
-            <div class="material-icons btnGenericText toolbar-button" data-toggle="tooltip" title="Record" id="tool_record">fiber_manual_record</div>
-            <div class="material-icons btnGenericText toolbar-button" data-toggle="tooltip" title="Zoom" id="tool_zoom" style="display:none">search</div>
-        </div>
-
-        
-
-        <div id="spinebar">
-            <div style="width: 100%; height: 35px; border-bottom: 2px solid #5c5d70; border-top: 2px solid #5c5d70; display: inline-block; line-height: 30px; padding-left: 10px; vertical-align: middle; background-color: #24252d;"><b>Select Character:</b></div>
-            <div style="display: table-cell; width: 100%; height: 30px">
-                <div class="selectShip material-icons spinetoolbutton q" onclick="onSelectShip()">add</div>
-                <div class="material-icons spinetoolbutton" style="float: right;" id="removeSprite">clear</div>
-            </div>
-            <div id="spriteContainer" style="width: 100%; display: flex; flex-direction: column; padding: 3px">
-
-            </div>
-        </div>
-     </body>
-
-        <footer id="false" style="height:70px;width:100%;margin-top: 20px;">
-        </footer>
-
-        <footer id="footer">
-            Azur Lane © is owned by Shanghai Manjuu, Xiamen Yongshi, Shanghai Yostar | All logos and trademarks are property of their respective owners.<br>
-            /alg/ wiki © 2019. This is a non-profit website. 
-            For concerns and feedback, send a mail to alg.4chan@gmail.com
-        </footer>
-
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.7.1/pixi.min.js"></script>
-        <script src="js/CCapture.all.min.js"></script>
-        <script src="js/pixi-spine.js"></script>
-        <script src="js/SkeletonBinary.js"></script>
-        <script src="js/sd.js"></script>
-        <script src="js/charData.js"></script>
-        <script src="js/main.js"></script>
-        <script src="js/backgroundData.js"></script>
-        <script src="js/recorder.js"></script>
-        <script src="js/toolbar.js"></script>
-        <script src="js/spinebar.js"></script>
-
-</html>
+function check(a, b){
+    for (var x in charData) {
+        for (var i in charData[x].skin){
+            $.ajax({
+                url:'../'+a+charData[x].skin[i]+b,
+                type:'HEAD',
+                error: function()
+                {
+                    console.log(charData[x].skin[i]);
+                },
+                success: function()
+                {
+                    //file exists
+                }
+            });
+        }
+    }
+}
+	
