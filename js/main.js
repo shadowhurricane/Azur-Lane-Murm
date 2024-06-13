@@ -64,8 +64,7 @@ var viewer = {
             $("#footer").css("top",height - $("#footer").height() - 20);
             toolbar.toolbar.css("top", window.pageYOffset);
         });
-        $(window).scroll(function(){
-            toolbar.toolbar.css("top", window.pageYOffset);
+       
             
         });
     },
