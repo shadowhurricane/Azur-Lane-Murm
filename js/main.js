@@ -63,10 +63,7 @@ var viewer = {
                                document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );   
             $("#footer").css("top",height - $("#footer").height() - 20);
             toolbar.toolbar.css("top", window.pageYOffset);
-        });
-        $(window).scroll(function(){
-            toolbar.toolbar.css("top", window.pageYOffset);
-            spinebar.spinebar.css("top", window.pageYOffset);
+        
         });
     },
     changeCanvas : function(skeletonData) {
