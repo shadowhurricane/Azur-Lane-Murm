@@ -66,7 +66,7 @@ var viewer = {
         });
         $(window).scroll(function(){
             toolbar.toolbar.css("top", window.pageYOffset);
-            spinebar.spinebar.css("top", window.pageYOffset);
+            
         });
     },
     changeCanvas : function(skeletonData) {
