@@ -416,4 +416,3 @@ function check(a, b){
         }
     }
 }
-	
