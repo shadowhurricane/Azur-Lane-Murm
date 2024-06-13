@@ -26,7 +26,7 @@ var viewer = {
             viewer.changeAnimation(this.selectedIndex);
         });
 
-        viewer.app = new PIXI.Application(1000, 900, { backgroundColor: 0x00ff00 });
+        viewer.app = new PIXI.Application(900, 900, { backgroundColor: 0x00ff00 });
         viewer.canvas.append($(viewer.app.view));
         viewer.drawBG(viewer.currentBG);   
         $(viewer.app.view).mousedown(() => {
@@ -64,8 +64,9 @@ var viewer = {
             $("#footer").css("top",height - $("#footer").height() - 20);
             toolbar.toolbar.css("top", window.pageYOffset);
         });
-       
-            
+        $(window).scroll(function(){
+            toolbar.toolbar.css("top", window.pageYOffset);
+            spinebar.spinebar.css("top", window.pageYOffset);
         });
     },
     changeCanvas : function(skeletonData) {
