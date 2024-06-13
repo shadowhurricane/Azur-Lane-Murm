@@ -50,7 +50,8 @@ var toolbar = {
 		context.addClass("context");
 		context.addClass("ctx_rec");
 		context.css("top", window.pageYOffset + toolbar.record.position().top);
-		
+		$(window).scroll(function(){
+            context.css("top", window.pageYOffset + toolbar.record.position().top);
         });
 		context.append(record_btn);
 		context.append(output_btn);
@@ -86,7 +87,8 @@ var toolbar = {
 		context.addClass("context");
 		context.addClass("ctx_zoom");
 		context.css("top", window.pageYOffset + toolbar.zoom.position().top);
-		
+		$(window).scroll(function(){
+            context.css("top", window.pageYOffset + toolbar.zoom.position().top);
         });
         context.append(zoom_input);
 
