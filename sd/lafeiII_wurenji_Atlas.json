@@ -1,0 +1,22 @@
+{
+  "m_GameObject": {
+    "m_FileID": 0,
+    "m_PathID": 0
+  },
+  "m_Enabled": 1,
+  "m_Script": {
+    "m_FileID": 0,
+    "m_PathID": 1008803689438726606
+  },
+  "m_Name": "lafeiII_wurenji_Atlas",
+  "atlasFile": {
+    "m_FileID": 0,
+    "m_PathID": 4000658632568279831
+  },
+  "materials": [
+    {
+      "m_FileID": 0,
+      "m_PathID": 209938529925400240
+    }
+  ]
+}
