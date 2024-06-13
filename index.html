@@ -175,12 +175,15 @@
     #spinebar {
     width: 150px;
     height: 240px;
-    position: absolute;
-    top: 10px; /* 180 pixels below the top of the website */
+    position: fixed; /* Make the element fixed in the viewport */
+    top: 170px; /* 150 pixels below the top of the viewport */
     left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Center horizontally */
     background-color: transparent;
-    
+    display: flex;
+    flex-direction: column;
 }
+
 
             #mainbody {
                 position: absolute;
