@@ -49,12 +49,13 @@ var spinebar = {
         container.append(innerCont);
 
         var icon = $("<img>");
-        icon.attr("https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/qicon/" + spinebar.list[spinebar.list.length-1].icon + ".png");
-        icon.css({
-        	"height": "60px", 
-        	"width": "60px", 
-        	"background-color": "white"
-        });
+icon.attr("src", "https://raw.githubusercontent.com/shadowhurricane/Azur-Lane-Murm/main/assets/qicon/" + spinebar.list[spinebar.list.length-1].icon + ".png");
+icon.css({
+    "height": "60px", 
+    "width": "60px", 
+    "background-color": "white"
+});
+
         innerCont.append(icon);
 
         spinebar.changeSelectedSprite(spinebar.list.length-1, spinebar.list[spinebar.list.length-1].id);
