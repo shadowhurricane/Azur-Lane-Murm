@@ -1451,6 +1451,14 @@ var charData = {
 		"group" : "Eagle Union",
 		"skin" : ["lafei","lafei_2","lafei_3","lafei_4","lafei_5","lafei_6","lafei_8","lafei_g","lafei_h",]
 	},
+
+	"laffey_ii" : {
+		"name" : "Laffey 2",
+		"type" : "Destroyer",
+		"group" : "Eagle Union",
+		"skin" : ["lafeiII","lafeiII_3",]
+	},
+	
 	"langley" : {
 		"name" : "Langley",
 		"type" : "Light Aircraft Carrier",
